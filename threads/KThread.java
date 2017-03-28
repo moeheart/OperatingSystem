@@ -33,6 +33,7 @@ public class KThread {
      *
      * @return	the current thread.
      */
+	static KThread th1;
     public static KThread currentThread() {
 	Lib.assertTrue(currentThread != null);
 	return currentThread;
@@ -275,6 +276,7 @@ public class KThread {
 	public void join() {
 		Lib.debug(dbgThread, "Joining to thread: " + toString());
 		Lib.assertTrue(this != currentThread);
+		Machine.interrupt().disable();
 		this.ready();
 		while (this.status != statusFinished)
 			runNextThread();
@@ -389,6 +391,9 @@ public class KThread {
 	
 	public void run() {
 	    for (int i=0; i<5; i++) {
+		if (i==2 && which == 0) {
+			th1.join();
+		}
 		System.out.println("*** thread " + which + " looped "
 				   + i + " times");
 		currentThread.yield();
@@ -403,9 +408,14 @@ public class KThread {
      */
     public static void selfTest() {
 	Lib.debug(dbgThread, "Enter KThread.selfTest");
+	System.out.println("11111");
+	th1 = new KThread(new PingTest(1));
+	th1.setName("forked thread").fork();
+	new KThread(new PingTest(2)).setName("forked thread2").fork();
+	System.out.println("33333");
 	
-	new KThread(new PingTest(1)).setName("forked thread").fork();
 	new PingTest(0).run();
+	System.out.println("22222");
     }
 
     private static final char dbgThread = 't';
