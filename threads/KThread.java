@@ -401,7 +401,7 @@ public class KThread {
 	}
 	
 	public void run() {
-	    for (int i=0; i<20; i++) {
+	    for (int i=0; i<5; i++) {
 		if (i==2 && which == 0) {
 			th1.join();
 		}
@@ -414,21 +414,86 @@ public class KThread {
 	private int which;
     }
 	
-	public static class PingTest2 implements Runnable {
-		PingTest2(int which) {
+	public static class PingTest1 implements Runnable {
+		PingTest1(Condition cond, int which) {
 			this.which = which;
+			this.cond = cond;
 		}
 		public void run() {
-			for (int i=0; i<20; i++) {
+			for (int i=0; i<10; i++) {
 			if (i==2 && which == 0) {
-				th1.join();
+				cond.conditionLock.acquire();
+				cond.sleep();
+				cond.conditionLock.release();
 			}
-			System.out.println("*** thread " + which + " looped "
+			if (i==4 && which == 1) {
+				cond.conditionLock.acquire();
+				cond.wake();
+				cond.conditionLock.release();
+			}
+			if (i==6 && which == 2) {
+				cond.conditionLock.acquire();
+				cond.sleep();
+				cond.conditionLock.release();
+			}
+			if (i==7 && which == 1) {
+				cond.conditionLock.acquire();
+				cond.sleep();
+				cond.conditionLock.release();
+			}
+			if (i==9 && which == 0) {
+				cond.conditionLock.acquire();
+				cond.wakeAll();
+				cond.conditionLock.release();
+			}
+			System.out.println("1*** thread " + which + " looped "
 					   + i + " times");
 			currentThread.yield();
 			}
 		}
 		private int which;
+		private Condition cond = null;
+    }
+	
+	public static class PingTest2 implements Runnable {
+		PingTest2(Condition2 cond, int which) {
+			this.which = which;
+			this.cond = cond;
+		}
+		public void run() {
+			for (int i=0; i<10; i++) {
+			if (i==2 && which == 0) {
+				cond.conditionLock.acquire();
+				cond.sleep();
+				cond.conditionLock.release();
+			}
+			if (i==4 && which == 1) {
+				cond.conditionLock.acquire();
+				cond.wake();
+				cond.conditionLock.release();
+			}
+			if (i==6 && which == 2) {
+				cond.conditionLock.acquire();
+				cond.sleep();
+				cond.conditionLock.release();
+			}
+			if (i==7 && which == 1) {
+				cond.conditionLock.acquire();
+				cond.sleep();
+				cond.conditionLock.release();
+			}
+			if (i==9 && which == 0) {
+				cond.conditionLock.acquire();
+				cond.wakeAll();
+				cond.conditionLock.release();
+			}
+			System.out.println("2*** thread " + which + " looped "
+					   + i + " times");
+			currentThread.yield();
+			}
+		}
+		private int which;
+		private Condition2 cond = null;
     }
 
     /**
