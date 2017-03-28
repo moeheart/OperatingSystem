@@ -495,11 +495,11 @@ public class KThread {
 		private int which;
 		private Condition2 cond = null;
     }
-	
-	static public Communicator c = new Communicator();
+
 	public static class CommTest implements Runnable {
-		CommTest(int which) {
+		CommTest(Communicator c, int which) {
 			this.which = which;
+			this.c = c;
 		}
 		public void run() {
 			int[][] a = new int[][]{{0, 0, 1, 0, 0, 0, 0, 0, 0, 0} ,{0, 0, 0, 0, 2, 0, 2, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0, 0, 1, 0}};
@@ -521,11 +521,13 @@ public class KThread {
 			}
 		}
 		private int which;
+		private Communicator c = null;
     }
 	
 	public static class CommTestCplx implements Runnable {
-		CommTestCplx(int which) {
+		CommTestCplx(Communicator c, int which) {
 			this.which = which;
+			this.c = c;
 		}
 		public void run() {
 			java.util.Random r = new java.util.Random(); 
@@ -548,6 +550,7 @@ public class KThread {
 			}
 		}
 		private int which;
+		private Communicator c = null;
     }
 
     /**
