@@ -16,12 +16,12 @@ public class Communicator {
      */
     public Communicator() {
 
-	  handShakeInProgress = false;
-	  waitingToListenQueueSize = 0;
-	  lock = new Lock();
-	  waitingToShakeHands = new Condition2(lock);
-	  waitingToSpeak = new Condition2(lock);
-	  waitingToListen = new Condition2(lock);
+  afterSpeak = false;
+  listenerNumber = 0;
+  lock = new Lock();
+  waitForComCV = new Condition2(lock);
+  waitForSpeakCV = new Condition2(lock);
+  waitForListenCV = new Condition2(lock);
     }
 
     /**
@@ -36,25 +36,31 @@ public class Communicator {
      */
 
     public void speak(int word) {
+     // acquire lock first
+  lock.acquire();
+  // if spoken already, not allow other speakers
+  while(afterSpeak) {
+   waitForSpeakCV.sleep();
+  }
 
-	  lock.acquire();
-	  while(handShakeInProgress){
-	   waitingToSpeak.sleep();
-	  }
-
-	  handShakeInProgress = true;
-			 this.message = word;
+  // change the flag
+  afterSpeak = true;
+     this.word = word;
   
-	  while(waitingToListenQueueSize == 0){
-	   waitingToShakeHands.sleep();
-	  }
+  // wait for some listener to communicate
+  while(listenerNumber == 0) {
+   waitForComCV.sleep();
+  }
  
-
-	  waitingToListen.wake();
-	  waitingToShakeHands.sleep();
-	  handShakeInProgress = false;
-	  waitingToSpeak.wake();
-	  lock.release();
+  // wake up listener 
+  waitForListenCV.wake();
+  // wait for listener finish
+  waitForComCV.sleep();
+  // initialize the flag
+  afterSpeak = false;
+  // allow other speakers
+  waitForSpeakCV.wake();
+  lock.release();
     }
 
     /**
@@ -65,33 +71,43 @@ public class Communicator {
      */
 
     public int listen() {
+     // acquire lock first
+        lock.acquire();
+        // increase the number
+  listenerNumber++; 
 
-			lock.acquire();
-	  waitingToListenQueueSize++; 
-
-		  if(waitingToListenQueueSize == 1 && handShakeInProgress){
-		   waitingToShakeHands.wake();
-		} 
-
-	  waitingToListen.sleep();
-	  waitingToShakeHands.wake();
-	  waitingToListenQueueSize--;
-			int myMessage = this.message;
-	  lock.release();
-	  return myMessage;
+  // HIGHLIGHT: 
+  if(listenerNumber == 1 && afterSpeak) {
+   waitForComCV.wake();
+  } 
+  // not allow other listeners
+  waitForListenCV.sleep();
+  // tell speaker i'm finished
+  waitForComCV.wake();
+  // reducre the number
+  listenerNumber--;
+  // HIGHLIGHT: avoid from bug caused by context-switching
+        int returnWord = this.word;
+  lock.release();
+  return returnWord;
     }
 
-    public int getQueueSize(){
-  return waitingToListenQueueSize;
-    }
-	private static final char dbgThread = 't';
-    private boolean handShakeInProgress;
-    private int waitingToListenQueueSize;
-    private int message;
+    // flag of whether already spoken
+    private boolean afterSpeak;
+    // number of listener waiting in queue
+    private int listenerNumber;
+    // word
+    private int word;
+    // lock
     private Lock lock;
-    private Condition2 waitingToShakeHands;
-    private Condition2 waitingToSpeak;
-    private Condition2 waitingToListen;   
+    // condition variable of waiting for making pair
+    private Condition2 waitForComCV;
+    // condition variable of waiting for speaking
+    private Condition2 waitForSpeakCV;
+    // condition variable of waiting for listening
+    private Condition2 waitForListenCV;
+	
+	private static final char dbgThread = 't'; 
 	
 	static public Communicator c = new Communicator();
 	public static void selfTest() {
