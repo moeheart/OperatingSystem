@@ -51,6 +51,7 @@ public class ThreadedKernel extends Kernel {
 	Condition.selfTest();
 	Condition2.selfTest();
 	Communicator.selfTest();
+	Communicator.selfTestCplx();
 	Semaphore.selfTest();
 	SynchList.selfTest();
 	if (Machine.bank() != null) {

@@ -49,5 +49,14 @@ public class Communicator {
 		System.out.println("22222");
     }
 	
+	public static void selfTestCplx() {
+		Lib.debug(dbgThread, "Enter KThread.selfTest");
+		System.out.println("Start Communicator selftest (Complex mode)...");
+		for (int i = 1; i < 10; i++) {
+			new KThread(new KThread.CommTestCplx(i)).setName("forked thread"+i).fork();
+		}
+		new KThread.CommTestCplx(0).run();
+    }
+	
 	private static final char dbgThread = 'c';
 }

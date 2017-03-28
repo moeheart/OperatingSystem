@@ -522,20 +522,47 @@ public class KThread {
 		}
 		private int which;
     }
+	
+	public static class CommTestCplx implements Runnable {
+		CommTestCplx(int which) {
+			this.which = which;
+		}
+		public void run() {
+			java.util.Random r = new java.util.Random(); 
+			for (int i=0; i<100; i++) {
+			int random = r.nextInt(100);
+			if (random < 5) {
+				System.out.println("Thread " + which + "ready to listen...");
+				int res = c.listen();
+				System.out.println("Thread " + which + "listened result: " + res);
+			}
+			if (random >= 95) {
+				int text = random = r.nextInt(1000);;
+				System.out.println("Thread " + which + "ready to speak" + text);
+				c.speak(text);
+				System.out.println("Thread " + which + "speak complete!");
+			}
+			System.out.println("3*** thread " + which + " looped "
+					   + i + " times");
+			currentThread.yield();
+			}
+		}
+		private int which;
+    }
 
     /**
      * Tests whether this module is working.
      */
     public static void selfTest() {
-	Lib.debug(dbgThread, "Enter KThread.selfTest");
-	System.out.println("11111");
-	th1 = new KThread(new PingTest(1));
-	th1.setName("forked thread").fork();
-	new KThread(new PingTest(2)).setName("forked thread2").fork();
-	System.out.println("33333");
-	
-	new PingTest(0).run();
-	System.out.println("22222");
+		Lib.debug(dbgThread, "Enter KThread.selfTest");
+		System.out.println("11111");
+		th1 = new KThread(new PingTest(1));
+		th1.setName("forked thread").fork();
+		new KThread(new PingTest(2)).setName("forked thread2").fork();
+		System.out.println("33333");
+		
+		new PingTest(0).run();
+		System.out.println("22222");
     }
 
     private static final char dbgThread = 't';
