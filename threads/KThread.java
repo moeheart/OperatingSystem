@@ -396,22 +396,39 @@ public class KThread {
     }
 
     private static class PingTest implements Runnable {
-	PingTest(int which) {
-	    this.which = which;
-	}
-	
-	public void run() {
-	    for (int i=0; i<5; i++) {
-		if (i==2 && which == 0) {
-			th1.join();
+		PingTest(int which) {
+			this.which = which;
 		}
-		System.out.println("*** thread " + which + " looped "
-				   + i + " times");
-		currentThread.yield();
-	    }
-	}
-
-	private int which;
+		public void run() {
+			for (int i=0; i<5; i++) {
+			if (i==2 && which == 0) {
+				th1.join();
+			}
+			System.out.println("*** thread " + which + " looped "
+					   + i + " times");
+			currentThread.yield();
+			}
+		}
+		private int which;
+    }
+	
+	private static class PingTest3 implements Runnable {
+		PingTest3(int which) {
+			this.which = which;
+		}
+		public void run() {
+			int maxN = 5;
+			if (which == 1) {
+				maxN = 10000;
+			}
+			for (int i=0; i<maxN; i++) {
+			
+			System.out.println("*** thread " + which + " looped "
+					   + i + " times");
+			currentThread.yield();
+			}
+		}
+		private int which;
     }
 	
 	public static class PingTest1 implements Runnable {
@@ -570,6 +587,13 @@ public class KThread {
 		
 		new PingTest(0).run();
 		System.out.println("22222");
+    }
+	
+	public static void selfTest2() {
+		System.out.println("Start...");
+		new KThread(new PingTest3(1)).setName("forked thread").fork();
+		new PingTest3(0).run();
+		System.out.println("End!");
     }
 
     private static final char dbgThread = 't';
