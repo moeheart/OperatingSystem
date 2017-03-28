@@ -495,6 +495,33 @@ public class KThread {
 		private int which;
 		private Condition2 cond = null;
     }
+	
+	static public Communicator c = new Communicator();
+	public static class CommTest implements Runnable {
+		CommTest(int which) {
+			this.which = which;
+		}
+		public void run() {
+			int[][] a = new int[][]{{0, 0, 1, 0, 0, 0, 0, 0, 0, 0} ,{0, 0, 0, 0, 2, 0, 2, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0, 0, 1, 0}};
+			for (int i=0; i<10; i++) {
+			if (a[which][i] == 1) {
+				System.out.println("Thread " + which + "ready to listen...");
+				int res = c.listen();
+				System.out.println("Thread " + which + "listened result: " + res);
+			}
+			if (a[which][i] == 2) {
+				int text = 233;
+				System.out.println("Thread " + which + "ready to speak" + text);
+				c.speak(text);
+				System.out.println("Thread " + which + "speak complete!");
+			}
+			System.out.println("3*** thread " + which + " looped "
+					   + i + " times");
+			currentThread.yield();
+			}
+		}
+		private int which;
+    }
 
     /**
      * Tests whether this module is working.

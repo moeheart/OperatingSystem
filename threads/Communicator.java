@@ -39,45 +39,15 @@ public class Communicator {
 	return 0;
     }
 	
-	public static class CommTest implements Runnable {
-		CommTestTest1(int which) {
-			this.which = which;
-		}
-		public void run() {
-			int[][10] a = new int[][10]{{0, 0, 1, 0, 0, 0, 0, 0, 0},{0, 0, 0, 0, 2, 0, 2, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0, 0, 1, 0}};
-			for (int i=0; i<10; i++) {
-			if (a[which][i] == 1) {
-				System.out.println("Thread " + which + "ready to listen...");
-				int res = listen();
-				System.out.println("Thread " + which + "listened result: " + res);
-			}
-			if (a[which][i] == 2) {
-				int text = 233;
-				System.out.println("Thread " + which + "ready to speak" + text);
-				speak(text);
-				System.out.println("Thread " + which + "speak complete!");
-			}
-			System.out.println("3*** thread " + which + " looped "
-					   + i + " times");
-			currentThread.yield();
-			}
-		}
-		private int which;
-    }
-	
 	public static void selfTest() {
 		Lib.debug(dbgThread, "Enter KThread.selfTest");
 		System.out.println("Start Communicator selftest...");
-		th1 = new KThread(new KThread.PingTest2(cond, 1));
-		th1.setName("forked thread").fork();
-		new KThread(new KThread.PingTest2(cond, 2)).setName("forked thread2").fork();
+		new KThread(new KThread.CommTest(1)).setName("forked thread").fork();
+		new KThread(new KThread.CommTest(2)).setName("forked thread2").fork();
 		System.out.println("33333");
-		
-		new KThread.PingTest2(cond, 0).run();
+		new KThread.CommTest(0).run();
 		System.out.println("22222");
     }
-	
-	
 	
 	private static final char dbgThread = 'c';
 }
