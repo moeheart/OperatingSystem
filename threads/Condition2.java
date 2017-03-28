@@ -21,11 +21,8 @@ public class Condition2 {
      *				<tt>wake()</tt>, or <tt>wakeAll()</tt>.
      */
     public Condition2(Lock conditionLock) {
-	System.out.println("INIT2");
 	this.conditionLock = conditionLock;
-	System.out.println("INIT3");
 	this.waitQueue = ThreadedKernel.scheduler.newThreadQueue(false);
-	System.out.println("INIT4");
     }
 
     /**

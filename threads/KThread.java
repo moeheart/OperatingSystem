@@ -495,6 +495,8 @@ public class KThread {
 		private int which;
 		private Condition2 cond = null;
     }
+	
+	private static int listeners = 0;
 
 	public static class CommTest implements Runnable {
 		CommTest(Communicator c, int which) {
@@ -533,19 +535,21 @@ public class KThread {
 			java.util.Random r = new java.util.Random(); 
 			for (int i=0; i<100; i++) {
 			int random = r.nextInt(100);
-			if (random < 5) {
-				System.out.println("Thread " + which + "ready to listen...");
+			if ((i < 90 && random < 5 - listeners) || (i >= 90 && listeners < 0)) {
+				System.out.println("Thread " + which + "ready to listen..." + " at loop "+i);
+				listeners++;
 				int res = c.listen();
-				System.out.println("Thread " + which + "listened result: " + res);
+				System.out.println("Thread " + which + "listened result: " + res + " at loop "+i);
 			}
-			if (random >= 95) {
+			else if ((i < 90 && random >= 95 - listeners) || (i >= 90 && listeners > 0)) {
 				int text = random = r.nextInt(1000);;
-				System.out.println("Thread " + which + "ready to speak" + text);
+				System.out.println("Thread " + which + "ready to speak " + text + " at loop "+i);
+				listeners--;
 				c.speak(text);
-				System.out.println("Thread " + which + "speak complete!");
+				System.out.println("Thread " + which + "speak complete!" + " at loop "+i);
 			}
-			System.out.println("3*** thread " + which + " looped "
-					   + i + " times");
+	//		System.out.println("3*** thread " + which + " looped "
+	//				   + i + " times");
 			currentThread.yield();
 			}
 		}

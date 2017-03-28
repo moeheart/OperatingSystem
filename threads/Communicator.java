@@ -10,53 +10,51 @@ import nachos.machine.*;
  * threads can be paired off at this point.
  */
 public class Communicator {
+
     /**
      * Allocate a new communicator.
      */
     public Communicator() {
-     afterSpeak = false;
-     listenernum = 0;
-     lock = new Lock();
-	 System.out.println("INIT!");
-     waitforspeakCV = new Condition2(lock);
-     waitforlistenCV = new Condition2(lock);
-     waitforcomCV = new Condition2(lock);
-     waitforfinCV = new Condition2(lock);
+
+	  handShakeInProgress = false;
+	  waitingToListenQueueSize = 0;
+	  lock = new Lock();
+	  waitingToShakeHands = new Condition2(lock);
+	  waitingToSpeak = new Condition2(lock);
+	  waitingToListen = new Condition2(lock);
     }
 
     /**
      * Wait for a thread to listen through this communicator, and then transfer
      * <i>word</i> to the listener.
-     *
-     * <p>
+     * <p/>
+     * <p/>
      * Does not return until this thread is paired up with a listening thread.
      * Exactly one listener should receive <i>word</i>.
      *
-     * @param word the integer to transfer.
+     * @param    word    the integer to transfer.
      */
-    public void speak(int word) {
-     // acquire lock first.
-     lock.acquire();
-     // If already speak, just wait.
-     while (afterSpeak) {
-      waitforspeakCV.sleep();
-     }
 
-     afterSpeak = true;
-     this.word = word;
-     // If nobody listen, just wait.
-     while (listenernum == 0) {
-      waitforcomCV.sleep();
-     }
-     // ensure someone is listening.
-     Lib.assertTrue (listenernum > 0);
-     // reduce the in-pair listener.
-     listenernum -= 1;
-     // listener can listen now.
-     waitforlistenCV.wake();
-     // can speak now
-     waitforspeakCV.wake();
-     // release the lock
+    public void speak(int word) {
+
+	  lock.acquire();
+	  while(handShakeInProgress){
+	   waitingToSpeak.sleep();
+	  }
+
+	  handShakeInProgress = true;
+			 this.message = word;
+  
+	  while(waitingToListenQueueSize == 0){
+	   waitingToShakeHands.sleep();
+	  }
+ 
+
+	  waitingToListen.wake();
+	  waitingToShakeHands.sleep();
+	  handShakeInProgress = false;
+	  waitingToSpeak.wake();
+	  lock.release();
     }
 
     /**
@@ -64,23 +62,36 @@ public class Communicator {
      * the <i>word</i> that thread passed to <tt>speak()</tt>.
      *
      * @return the integer transferred.
-     */    
+     */
+
     public int listen() {
-     // acquire lock first.
-  lock.acquire();
-  listenernum += 1;
 
-  while (!afterSpeak) {
-   waitforlistenCV.sleep();
-  }
+			lock.acquire();
+	  waitingToListenQueueSize++; 
 
-  // initialize the flag
-     afterSpeak = false;
-     waitforcomCV.wake();
-  int theword = this.word;
-  lock.release();
-  return theword;
+		  if(waitingToListenQueueSize == 1 && handShakeInProgress){
+		   waitingToShakeHands.wake();
+		} 
+
+	  waitingToListen.sleep();
+	  waitingToShakeHands.wake();
+	  waitingToListenQueueSize--;
+			int myMessage = this.message;
+	  lock.release();
+	  return myMessage;
     }
+
+    public int getQueueSize(){
+  return waitingToListenQueueSize;
+    }
+	private static final char dbgThread = 't';
+    private boolean handShakeInProgress;
+    private int waitingToListenQueueSize;
+    private int message;
+    private Lock lock;
+    private Condition2 waitingToShakeHands;
+    private Condition2 waitingToSpeak;
+    private Condition2 waitingToListen;   
 	
 	static public Communicator c = new Communicator();
 	public static void selfTest() {
@@ -103,19 +114,4 @@ public class Communicator {
 		new KThread.CommTestCplx(c,0).run();
     }
 	
-	private static final char dbgThread = 'c';
-   private int word;
-    // the flag of whether speaker has spoken.
-   private boolean afterSpeak;
-   // the number of listener waiting for listening.
-   private int listenernum;
-   private Lock lock;
-   // the condition variable of waiting speakers.
-   private Condition2 waitforspeakCV;
-   // the condition variable of waiting listeners.
-   private Condition2 waitforlistenCV;
-   // the condition variable of thread that waiting for a listener to listen the speaking, namely, waiting for communication.
-   private Condition2 waitforcomCV;
-   // the condition variable of waiting for finish.
-   private Condition2 waitforfinCV;
 }
