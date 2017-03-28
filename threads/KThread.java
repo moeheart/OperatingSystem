@@ -183,6 +183,7 @@ public class KThread {
      * delete this thread.
      */
     public static void finish() {
+	System.out.println("finishing!");
 	Lib.debug(dbgThread, "Finishing thread: " + currentThread.toString());
 	
 	Machine.interrupt().disable();
@@ -194,6 +195,7 @@ public class KThread {
 
 
 	currentThread.status = statusFinished;
+	System.out.println("finished!");
 	
 	sleep();
     }
@@ -277,9 +279,14 @@ public class KThread {
 		Lib.debug(dbgThread, "Joining to thread: " + toString());
 		Lib.assertTrue(this != currentThread);
 		Machine.interrupt().disable();
-		this.ready();
-		while (this.status != statusFinished)
+		if (this.status != statusReady)
+			this.ready();
+		System.out.println("Joining...");
+		while (this.status != statusFinished) {
+			System.out.println("Running...");
 			runNextThread();
+			System.out.println("Running Complete!");
+		}
     }
 
     /**
