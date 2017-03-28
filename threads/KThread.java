@@ -413,6 +413,23 @@ public class KThread {
 
 	private int which;
     }
+	
+	public static class PingTest2 implements Runnable {
+		PingTest2(int which) {
+			this.which = which;
+		}
+		public void run() {
+			for (int i=0; i<20; i++) {
+			if (i==2 && which == 0) {
+				th1.join();
+			}
+			System.out.println("*** thread " + which + " looped "
+					   + i + " times");
+			currentThread.yield();
+			}
+		}
+		private int which;
+    }
 
     /**
      * Tests whether this module is working.
