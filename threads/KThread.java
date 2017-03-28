@@ -278,16 +278,18 @@ public class KThread {
 	public void join() {
 		Lib.debug(dbgThread, "Joining to thread: " + toString());
 		Lib.assertTrue(this != currentThread);
-		Machine.interrupt().disable();
+
+		if (this.status == statusFinished)
+			return;
+		boolean intStatus = Machine.interrupt().disable();
 		if (this.status != statusReady)
 			this.ready();
-	//	System.out.println("Joining...");
+	 // System.out.println("Joining...");
 		while (this.status != statusFinished) {
-		//	System.out.println("Running...");
+	  // System.out.println("Running...");
 			currentThread.yield();
-		//	System.out.println("Running Complete!");
-		}
-    }
+	  // System.out.println("Running Complete!");
+	  }
 
     /**
      * Create the idle thread. Whenever there are no threads ready to be run,
@@ -397,7 +399,7 @@ public class KThread {
 	}
 	
 	public void run() {
-	    for (int i=0; i<5; i++) {
+	    for (int i=0; i<20; i++) {
 		if (i==2 && which == 0) {
 			th1.join();
 		}
