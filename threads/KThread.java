@@ -290,6 +290,8 @@ public class KThread {
 			currentThread.yield();
 	  // System.out.println("Running Complete!");
 	  }
+	  Machine.interrupt().restore(intStatus);
+	}
 
     /**
      * Create the idle thread. Whenever there are no threads ready to be run,
