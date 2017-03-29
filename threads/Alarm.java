@@ -20,7 +20,7 @@ public class Alarm {
      */
     public Alarm() {
         entryList = new LinkedList<>();
-
+		System.out.println("Alarm created!");
         Machine.timer().setInterruptHandler(new Runnable() {
             public void run() {
                 timerInterrupt();
@@ -36,10 +36,14 @@ public class Alarm {
      */
     public void timerInterrupt() {
         long currentTime = Machine.timer().getTime();
+		//System.out.println("Timer run");
+		//System.out.println(entryList.size());
         for(Entry e : entryList){
+		//	System.out.println("find");
             if(currentTime >= e.wakeTime){
                 e.thread.ready();
                 entryList.remove(e);
+				break;
             }
         }
     }
@@ -59,8 +63,9 @@ public class Alarm {
      */
     public void waitUntil(long x) {
         // for now, cheat just to get something working (busy waiting is bad)
+	//	System.out.println("wait...");
         entryList.add(new Entry(KThread.currentThread(), Machine.timer().getTime() + x));
-
+	//	System.out.println(entryList.size());
         boolean intStatus = Machine.interrupt().disable();
         KThread.currentThread().sleep();
         Machine.interrupt().restore(intStatus);

@@ -514,22 +514,25 @@ public class KThread {
     }
 	
 	private static class PingTest4 implements Runnable {
-        PingTest4(int which) {
+        PingTest4(Alarm a, int which) {
             this.which = which;
+			this.a = a;
         }
         public void run() {
-			Alarm alarm = new Alarm();
             for (int i = 0; i < 5; i++) {
-				if (i == 2 && which == 1)
-					alarm.waitUntil(12000000);
-				if (i == 3 && which == 0)
-					alarm.waitUntil(500);
+				if (i == 1 && which == 2)
+					a.waitUntil(500);
+				if (i == 3 && which == 1)
+					a.waitUntil(12000000);
+				if (i == 4 && which == 0)
+					a.waitUntil(20000000);
                 System.out.println("*** thread " + which + " looped "
                     + i + " times");
                 currentThread.yield();
             }
         }
         private int which;
+		private Alarm a;
     }
 	
 	private static int listeners = 0;
@@ -615,11 +618,12 @@ public class KThread {
 		System.out.println("End!");
     }
 	
-	public static void selfTest3() {
+	public static void selfTest3(Alarm a) {
 		Lib.debug(dbgThread, "Enter KThread.selfTest3");
 		System.out.println("Start Test 3");
-		new KThread(new PingTest4(1)).setName("forked thread").fork();
-		new PingTest4(0).run();
+		new KThread(new PingTest4(a,1)).setName("forked thread").fork();
+		new KThread(new PingTest4(a,2)).setName("forked thread").fork();
+		new PingTest4(a,0).run();
 		System.out.println("End!");
     }
 
