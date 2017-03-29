@@ -108,23 +108,8 @@ public class Condition {
 	while (!waitQueue.isEmpty())
 	    wake();
     }
-	
-	
-	public static KThread th1 = new KThread();
-	public static Condition cond = new Condition(new Lock());
-	public static void selfTest() {
-		Lib.debug(dbgThread, "Enter KThread.selfTest");
-		System.out.println("Start Condition1 selftest...");
-		th1 = new KThread(new KThread.PingTest1(cond, 1));
-		th1.setName("forked thread").fork();
-		new KThread(new KThread.PingTest1(cond, 2)).setName("forked thread2").fork();
-		System.out.println("33333");
-		
-		new KThread.PingTest1(cond, 0).run();
-		System.out.println("22222");
-    }
 
-    public Lock conditionLock;
+    private Lock conditionLock;
     private LinkedList<Semaphore> waitQueue;
 	private static final char dbgThread = 't';
 }

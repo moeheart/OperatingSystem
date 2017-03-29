@@ -106,28 +106,4 @@ public class Communicator {
     private Condition2 waitForSpeakCV;
     // condition variable of waiting for listening
     private Condition2 waitForListenCV;
-	
-	private static final char dbgThread = 't'; 
-	
-	static public Communicator c = new Communicator();
-	public static void selfTest() {
-		Lib.debug(dbgThread, "Enter KThread.selfTest");
-		System.out.println("Start Communicator selftest...");
-		new KThread(new KThread.CommTest(c,1)).setName("forked thread").fork();
-		new KThread(new KThread.CommTest(c,2)).setName("forked thread2").fork();
-		System.out.println("33333");
-		new KThread.CommTest(c,0).run();
-		System.out.println("22222");
-    }
-	
-	public static void selfTestCplx() {
-	//	static public Communicator c = new Communicator();
-		Lib.debug(dbgThread, "Enter KThread.selfTest");
-		System.out.println("Start Communicator selftest (Complex mode)...");
-		for (int i = 1; i < 10; i++) {
-			new KThread(new KThread.CommTestCplx(c,i)).setName("forked thread"+i).fork();
-		}
-		new KThread.CommTestCplx(c,0).run();
-    }
-	
 }

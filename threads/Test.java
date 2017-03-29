@@ -10,11 +10,12 @@ public class Test {
 		testP2();
 		testP3(alarm);
 		testP4();
+		//testP4Cplx();
 		testP6();
 	}
 	
 	//Test P1
-	static KThread th1 = null;
+	private static KThread th1 = null;
 	public static void testP1(){
 		Lib.debug('1', "Enter KThread.selfTest");
 		System.out.println("Test P1 start...");
@@ -44,7 +45,8 @@ public class Test {
     }
 	
 	//Test P2
-	public static Condition2 cond = new Condition2(new Lock());
+	private static Lock l = new Lock();
+	private static Condition2 cond = new Condition2(l);
 	public static void testP2() {
 		Lib.debug('2', "Enter Condition2.selfTest");
 		System.out.println("Test P2 start...");
@@ -63,19 +65,19 @@ public class Test {
 			int[][] a = new int[][]{{0, 0, 1, 0, 0, 0, 0, 0, 3, 0} ,{0, 0, 0, 0, 2, 0, 0, 1, 0, 0},{0, 0, 0, 0, 0, 0, 1, 0, 0, 0}};
 			for (int i=0; i<10; i++) {
 				if (a[which][i] == 1) {
-					cond.conditionLock.acquire();
+					l.acquire();
 					cond.sleep();
-					cond.conditionLock.release();
+					l.release();
 				}
 				else if (a[which][i] == 2) {
-					cond.conditionLock.acquire();
+					l.acquire();
 					cond.wake();
-					cond.conditionLock.release();
+					l.release();
 				}
 				else if (a[which][i] == 3){
-					cond.conditionLock.acquire();
+					l.acquire();
 					cond.wakeAll();
-					cond.conditionLock.release();
+					l.release();
 				}
 				System.out.println("P2*** thread " + which + " looped "
 						   + i + " times");
@@ -118,7 +120,7 @@ public class Test {
     }
 	
 	//Test P4
-	static public Communicator c = new Communicator();
+	private static Communicator c = new Communicator();
 	public static void testP4() {
 		Lib.debug('4', "Enter Alarm.selfTest");
 		System.out.println("Test P4 start...");
@@ -133,7 +135,8 @@ public class Test {
 			this.c = c;
 		}
 		public void run() {
-			int[][] a = new int[][]{{0, 0, 1, 0, 0, 0, 0, 0, 0, 0} ,{0, 0, 0, 0, 2, 0, 2, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0, 0, 1, 0}};
+			int[][] a = new int[][]{{0, 0, 1, 0, 0, 2, 0, 0, 0, 0} ,{0, 0, 0, 0, 2, 0, 2, 0, 0, 0},{0, 0, 0, 0, 0, 0, 0, 0, 1, 1}};
+			int[]b = new int[]{0, 0, 0, 0, 233, 666, 1001, 0, 0, 0};
 			for (int i=0; i<10; i++) {
 				if (a[which][i] == 1) {
 					System.out.println("Thread " + which + " ready to listen...");
@@ -141,7 +144,7 @@ public class Test {
 					System.out.println("Thread " + which + " listened result: " + res);
 				}
 				if (a[which][i] == 2) {
-					int text = 233;
+					int text = b[i];
 					System.out.println("Thread " + which + " ready to speak" + text);
 					c.speak(text);
 					System.out.println("Thread " + which + " speak complete!");
@@ -199,8 +202,8 @@ public class Test {
 	public static void testP6() {
 		BoatGrader b = new BoatGrader();
 		System.out.println("Test P6 start...");
-		System.out.println("P6***Testing Boats with 22 children, 12 adults***");
-		Boat.begin(12, 22, b);
+		System.out.println("P6***Testing Boats with 11 children, 5 adults***");
+		Boat.begin(5, 11, b);
 		System.out.println("Test P6 complete!");
     }
 }

@@ -72,22 +72,8 @@ public class Condition2 {
 	Machine.interrupt().restore(intStatus);   
     }
 
-    public Lock conditionLock;
+    private Lock conditionLock;
     private ThreadQueue waitQueue;
-	
-	public static KThread th1 = new KThread();
-	public static Condition2 cond = new Condition2(new Lock());
-	public static void selfTest() {
-		Lib.debug(dbgThread, "Enter KThread.selfTest");
-		System.out.println("Start Condition2 selftest...");
-		th1 = new KThread(new KThread.PingTest2(cond, 1));
-		th1.setName("forked thread").fork();
-		new KThread(new KThread.PingTest2(cond, 2)).setName("forked thread2").fork();
-		System.out.println("33333");
-		
-		new KThread.PingTest2(cond, 0).run();
-		System.out.println("22222");
-    }
 	
 	private static final char dbgThread = 't';
 }
