@@ -11,6 +11,7 @@ public class Test {
 		testP3(alarm);
 		testP4();
 		//testP4Cplx();
+		testP5();
 		testP6();
 	}
 	
@@ -196,6 +197,62 @@ public class Test {
 		private int which;
 		private Communicator c = null;
 		static private int listeners = 0;
+    }
+	
+	//Test P5
+    public static void testP5() {
+        Lib.debug('5', "Enter KThread.selfTest");
+		System.out.println("Test P5 start...");
+        KThread first = new KThread(new ThreadP5(1)).setName("forked thread1");
+        KThread second = new KThread(new ThreadP5(2)).setName("forked thread2");
+        KThread third = new KThread(new ThreadP5(3)).setName("forked thread3");
+        KThread forth = new KThread(new ThreadP5(4)).setName("forked thread4");
+        boolean intStatus = Machine.interrupt().disable();
+        ThreadedKernel.scheduler.setPriority(first, 3);
+        ThreadedKernel.scheduler.setPriority(second, 3);
+        ThreadedKernel.scheduler.setPriority(third, 4);
+        ThreadedKernel.scheduler.setPriority(forth, 5);
+        Machine.interrupt().restore(intStatus);
+        first.fork();
+        second.fork();
+        third.fork();
+        forth.fork();
+        new ThreadP5(0).run();
+		System.out.println("Test P5 Complete!");
+    }
+	
+	private static class ThreadP5 implements Runnable {
+        ThreadP5(int which) {
+            this.which = which;
+        }
+        public void run() {
+            for (int i = 0; i < 10; i++) {
+
+//                boolean intStatus = Machine.interrupt().disable();
+//                readyQueue.print();
+//                Machine.interrupt().restore(intStatus);
+
+                if (which == 1 && i == 0)
+                    lock.acquire();
+                if (which == 2 && i == 2)
+                    lock.acquire();
+                if (which == 1 && i == 6)
+                    lock.release();
+                if (which == 2 && i == 8)
+                    lock.release();
+                if (which == 3 && i == 4) {
+                    boolean intState = Machine.interrupt().disable();
+                    ThreadedKernel.scheduler.decreasePriority();
+                    Machine.interrupt().restore(intState);
+                }
+                System.out.println("*** thread " + which + " looped "
+                        + i + " times");
+				KThread.yieldCurrent();
+            }
+        }
+
+        private int which;
+        private static Lock lock = new Lock();
     }
 	
 	//Test P6

@@ -276,22 +276,28 @@ public class KThread {
      * thread.
      */
 	public void join() {
-		Lib.debug(dbgThread, "Joining to thread: " + toString());
-		Lib.assertTrue(this != currentThread);
+        Lib.debug(dbgThread, "Joining to thread: " + toString());
 
-		if (this.status == statusFinished)
-			return;
-		boolean intStatus = Machine.interrupt().disable();
-		if (this.status != statusReady)
-			this.ready();
-	 // System.out.println("Joining...");
-		while (this.status != statusFinished) {
-	  // System.out.println("Running...");
-			currentThread.yield();
-	  // System.out.println("Running Complete!");
-	  }
-	  Machine.interrupt().restore(intStatus);
-	}
+        Lib.assertTrue(this != currentThread);
+
+        if (this.status == statusFinished)
+            return;
+
+        boolean intStatus = Machine.interrupt().disable();
+
+        if (this.status != statusReady)
+            this.ready();
+
+        ThreadQueue waitQueue = ThreadedKernel.scheduler.newThreadQueue(true);
+        waitQueue.waitForAccess(currentThread);
+        waitQueue.acquire(this);
+
+        while(this.status != statusFinished)
+            yield();
+
+        waitQueue.nextThread();
+        Machine.interrupt().restore(intStatus);
+    }
 
     /**
      * Create the idle thread. Whenever there are no threads ready to be run,
