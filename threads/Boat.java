@@ -21,27 +21,32 @@ public class Boat
    // Number on the left.
    static int childNumber;
    static int adultNumber;
+   // Number of children waiting on the left side
    static int waitChildren;
+   // This counter seems illegal according to real world. 
    static int childCanBack;
 
+   // flag that if the boat is 'booked' by adult
    static boolean isAdult;
+   // flag that the pilot of sleeping child in bot is chosen or not
    static boolean pilotChosen;
    static boolean finish;
 
+   // "Left", "Right"
    static String boatSide;
     
     public static void selfTest()
     {
- BoatGrader b = new BoatGrader();
- 
-// System.out.println("\n ***Testing Boats with only 2 children***");
-// begin(0, 2, b);
+  BoatGrader b = new BoatGrader();
+  
+ // System.out.println("\n ***Testing Boats with only 2 children***");
+ // begin(0, 2, b);
 
-// System.out.println("\n ***Testing Boats with 2 children, 1 adult***");
-//   begin(1, 2, b);
+ // System.out.println("\n ***Testing Boats with 2 children, 1 adult***");
+ //   begin(1, 2, b);
 
-   System.out.println("\n ***Testing Boats with 3 children, 3 adults***");
-   begin(12, 22, b);
+    System.out.println("\n ***Testing Boats with 3 children, 3 adults***");
+    begin(12, 22, b);
     }
 
     public static void begin( int adults, int children, BoatGrader b )
@@ -76,41 +81,49 @@ public class Boat
   // Create threads here. See section 3.4 of the Nachos for Java
   // Walkthrough linked from the projects page.
 
+  // create target of adult threads
   Runnable adult_thread = new Runnable() {
             public void run() {
                 AdultItinerary();
             }
         };
 
+        // create target of child threads
         Runnable child_thread = new Runnable() {
             public void run() {
                 ChildItinerary();
             }
         };
 
+        // create adult threads
   for (int i = 0; i < adults; i++) {
 
             KThread adult = new KThread(adult_thread);
-            adult.setName("Adult: " + i);
-            System.out.println("***Adult " + i + " created***");
+            adult.setName("Adult " + i);
+            System.out.println("Create Adult " + i);
             adult.fork();
 
         }
 
+        // create child threads
         for (int i = 0; i < children; i++) {
    
             KThread child = new KThread(child_thread);
-            child.setName("Child: " + i);
-            System.out.println("***Child " + i + " created***");
+            child.setName("Child " + i);
+            System.out.println("Create Child " + i);
             child.fork();
 
         }
 
+        // main thread use Communicator to listen and wait
         while (restNumber != 0) {
    restNumber = reportor.listen();
         }
 
+        //finish
         finish = true;
+
+        System.out.println("Finish!");
 
     }
 
@@ -193,8 +206,8 @@ public class Boat
     // woken up, I go across.
     bg.ChildRideToMolokai();
     // uodate counter.
-    childNumber -= 2;
-    childCanBack += 2;
+    childNumber -= 1;
+    childCanBack += 1;
     waitChildren -= 1;
    }
 
@@ -203,8 +216,10 @@ public class Boat
 
    if (!pilotChosen) {
     pilotChosen = true;
-    waitChildren -= 1;
     bg.ChildRowToMolokai();
+    childNumber -= 1;
+    childCanBack += 1;
+    waitChildren -= 1;
     boatSide = "Right";
     // sleep on rightside, finish or bow back, just wait.
     childRight.sleep();

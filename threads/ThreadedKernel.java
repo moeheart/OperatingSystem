@@ -46,14 +46,7 @@ public class ThreadedKernel extends Kernel {
      * tests here.
      */	
     public void selfTest() {
-	System.out.println("Test begin...");
-//	KThread.selfTest();
-//	Condition.selfTest();
-//	Condition2.selfTest();
-//	Communicator.selfTest();
-//	Communicator.selfTestCplx();
-//	KThread.selfTest2();
-	KThread.selfTest3(alarm);
+	Test.testAll(alarm);
 	Semaphore.selfTest();
 	SynchList.selfTest();
 	if (Machine.bank() != null) {

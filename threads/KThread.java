@@ -626,6 +626,10 @@ public class KThread {
 		new PingTest4(a,0).run();
 		System.out.println("End!");
     }
+	
+	public static void yieldCurrent(){
+		currentThread.yield();
+	}
 
     private static final char dbgThread = 't';
 
