@@ -1,5 +1,3 @@
-//yhdxt`oi`offt`of{inofinofmhphofx`ofxholhofuh`ov`ofphorih
-//PART OF THE NACHOS. DON'T CHANGE CODE OF THIS LINE
 package nachos.threads;
 
 import nachos.machine.*;
@@ -86,7 +84,7 @@ public class Condition {
 
 	conditionLock.release();
 	waiter.P();
-	conditionLock.acquire();
+	conditionLock.acquire();	
     }
 
     /**
@@ -113,4 +111,5 @@ public class Condition {
 
     private Lock conditionLock;
     private LinkedList<Semaphore> waitQueue;
+	private static final char dbgThread = 't';
 }
