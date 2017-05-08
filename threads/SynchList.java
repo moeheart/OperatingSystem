@@ -1,5 +1,3 @@
-//yhdxt`oi`offt`of{inofinofmhphofx`ofxholhofuh`ov`ofphorih
-//PART OF THE NACHOS. DON'T CHANGE CODE OF THIS LINE
 package nachos.threads;
 
 import java.util.LinkedList;
@@ -27,7 +25,7 @@ public class SynchList {
      */
     public void add(Object o) {
 	Lib.assertTrue(o != null);
-
+	
 	lock.acquire();
 	list.add(o);
 	listEmpty.wake();
@@ -57,7 +55,7 @@ public class SynchList {
 	    this.ping = ping;
 	    this.pong = pong;
 	}
-
+	
 	public void run() {
 	    for (int i=0; i<10; i++)
 		pong.add(ping.removeFirst());

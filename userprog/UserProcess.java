@@ -27,6 +27,8 @@ public class UserProcess {
 	pageTable = new TranslationEntry[numPhysPages];
 	for (int i=0; i<numPhysPages; i++)
 	    pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
+	for (int i=0; i<MAX_FILE; i++) 
+         fds[i] = new File();
     }
     
     /**
@@ -345,7 +347,157 @@ public class UserProcess {
 	Lib.assertNotReached("Machine.halt() did not halt machine!");
 	return 0;
     }
-
+	
+	private int handleExit(int status) {
+		
+		return 0;
+	}
+	
+	//Handle Create!!! Test by testCreate.c
+	private int handleCreate(int name) {                               
+	    System.out.println("Starting creat...");
+        String filename = readVirtualMemoryString(name, MAX_LENGTH); 
+		System.out.println("filename="+filename);
+		int existfile = getFileByName(filename);
+        if (existfile != -1) 
+            return -1;
+        OpenFile file = UserKernel.fileSystem.open(filename, true);
+        if (file == null)
+            return -1;
+		int filen = getFilen();
+		if (filen < 0)
+			return -1;
+		fds[filen] = new File(filename, file);
+		System.out.println("Complete creat! num="+filen);
+		return filen;
+	}
+	
+	//Handle Open!!! Test by testOpen.c
+	private int handleOpen(int name) {
+	    System.out.println("Starting open...");
+        String filename = readVirtualMemoryString(name, MAX_LENGTH); 
+		System.out.println("filename="+filename);
+		int existfile = getFileByName(filename);
+        if (existfile != -1) 
+            return -1;
+        OpenFile file = UserKernel.fileSystem.open(filename, false);
+        if (file == null)
+            return -1;
+		int filen = getFilen();
+		if (filen < 0)
+			return -1;
+		fds[filen] = new File(filename, file);
+		System.out.println("Complete open! num="+filen);
+		return filen;
+	}
+	
+	//Handle Read!!! Test by testReadWrite.c
+	private int handleRead(int fd, int buffer, int size){
+		System.out.println("Starting read...");
+		System.out.println("Arguments = " + fd + " " + buffer + " " + size);
+        if (fd < 0 || fd > MAX_FILE || fds[fd].file == null)
+            return -1;
+        File file = fds[fd];
+        byte[] tmp = new byte[size];
+        int res = file.file.read(file.pos, tmp, 0, size);
+        if (res < 0)
+            return -1;
+		int length = writeVirtualMemory(buffer, tmp);
+		file.pos = file.pos + length;
+		System.out.println("Complete read! res="+res);
+		System.out.println("First byte="+tmp[0]);
+		return res;
+	}
+	
+	//Handle Write!!! Test by testReadWrite.c
+	private int handleWrite(int fd, int buffer, int size){
+		System.out.println("Starting write...");
+		System.out.println("Arguments = " + fd + " " + buffer + " " + size);
+        if (fd < 0 || fd > MAX_FILE || fds[fd].file == null)
+            return -1;
+        File file = fds[fd];
+        byte[] tmp = new byte[size];
+		int content = readVirtualMemory(buffer, tmp);
+        if (content < 0)
+            return -1;
+		int length = file.file.write(file.pos, tmp, 0, size);
+		if (length < 0)
+			return -1;
+		file.pos = file.pos + length;
+		System.out.println("Complete write! length="+length);
+		return length;
+	}
+	
+	//Handle Close!!! Test by testClose.c
+	private int handleClose(int fd){
+		System.out.println("Starting close...");
+		System.out.println("File = " + fd);
+        if (fd < 0 || fd >= MAX_FILE)
+            return -1;
+        boolean res = true;
+		fds[fd].file.close();
+		if (fds[fd].toRemove) 
+			res = UserKernel.fileSystem.remove(fds[fd].name);
+		fds[fd] = new File();
+		if (!res)
+			return -1;
+		System.out.println("Complete close!");
+        return 0;
+	}
+	
+	//Handle Unlink!!! Test by testUnlink.c
+	private int handleUnlink(int name){
+		boolean res = true;
+	    System.out.println("Starting unlink...");
+        String filename = readVirtualMemoryString(name, MAX_LENGTH);
+		System.out.println("filename="+filename);
+        int filen = getFileByName(filename);
+        if (filen == -1) {
+            res = UserKernel.fileSystem.remove(filename);
+			System.out.println("Deleted immediately!");
+		}
+        else {
+            fds[filen].toRemove = true;
+			System.out.println("Delete later!");
+		}
+        if (!res)
+			return -1;
+		System.out.println("Complete unlink!");
+		return 0;
+	}
+	
+	public class File {
+        public File() {
+			this.name = "";
+			this.file = null;
+			this.pos = 0;
+		}
+		public File(String name, OpenFile file) {
+			this.name = name;
+			this.file = file;
+			this.pos = 0;
+		}
+        private String name = "";
+        private OpenFile file = null;
+        private int pos = 0;
+        private boolean toRemove = false;
+    } 
+	
+	private int getFilen() {
+        for (int i = 0; i < MAX_FILE; i++) {
+            if (fds[i].file == null)
+                return i;
+        }
+        return -1;
+	}
+	
+	private int getFileByName(String name) {
+		for (int i = 0; i < MAX_FILE; i++) {
+			if (name.equals(fds[i].name))
+				return i;
+		}
+		return -1;
+	}
 
     private static final int
         syscallHalt = 0,
@@ -388,13 +540,27 @@ public class UserProcess {
      * @return	the value to be returned to the user.
      */
     public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
+		System.out.println(syscall);
 	switch (syscall) {
 	case syscallHalt:
 	    return handleHalt();
-
-
+	case syscallExit:
+		return handleExit(a0);
+	case syscallCreate:
+		return handleCreate(a0);
+	case syscallOpen:
+		return handleOpen(a0);
+	case syscallRead:
+		return handleRead(a0,a1,a2);
+	case syscallWrite:
+		return handleWrite(a0,a1,a2);
+	case syscallClose:
+		return handleClose(a0);
+	case syscallUnlink:
+		return handleUnlink(a0);
 	default:
 	    Lib.debug(dbgProcess, "Unknown syscall " + syscall);
+		System.out.println(syscall);
 	    Lib.assertNotReached("Unknown system call!");
 	}
 	return 0;
@@ -446,4 +612,11 @@ public class UserProcess {
 	
     private static final int pageSize = Processor.pageSize;
     private static final char dbgProcess = 'a';
+	
+    public static final int MAX_FILE = 16;
+    public static final int STDIN = 0;
+    public static final int STDOUT = 1;
+	public static final int MAX_LENGTH = 256;
+	private File fds[] = new File[MAX_FILE];
+	
 }

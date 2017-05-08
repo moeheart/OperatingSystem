@@ -1,5 +1,3 @@
-//yhdxt`oi`offt`of{inofinofmhphofx`ofxholhofuh`ov`ofphorih
-//PART OF THE NACHOS. DON'T CHANGE CODE OF THIS LINE
 package nachos.threads;
 
 import nachos.machine.*;
@@ -34,7 +32,7 @@ public class LotteryScheduler extends PriorityScheduler {
      */
     public LotteryScheduler() {
     }
-
+    
     /**
      * Allocate a new lottery thread queue.
      *

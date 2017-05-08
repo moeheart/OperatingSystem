@@ -1,5 +1,3 @@
-//yhdxt`oi`offt`of{inofinofmhphofx`ofxholhofuh`ov`ofphorih
-//PART OF THE NACHOS. DON'T CHANGE CODE OF THIS LINE
 package nachos.threads;
 
 import nachos.machine.*;
@@ -64,7 +62,7 @@ public class Semaphore {
 	else {
 	    value++;
 	}
-
+	
 	Machine.interrupt().restore(intStatus);
     }
 
@@ -73,7 +71,7 @@ public class Semaphore {
 	    this.ping = ping;
 	    this.pong = pong;
 	}
-
+	
 	public void run() {
 	    for (int i=0; i<10; i++) {
 		ping.P();
