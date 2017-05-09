@@ -8,7 +8,7 @@ char buf[BUFSIZE];
 
 int main(int argc, char** argv)
 {
-  creat("aaa.txt");
-  halt();
+  creat("aah.txt");
+  exit(666);
   return 0;
 }

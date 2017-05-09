@@ -8,7 +8,8 @@ char buf[BUFSIZE];
 
 int main(int argc, char** argv)
 {
-  creat("aaa.txt");
-  halt();
+  int x = 0;
+  exec("testCreate.coff",1,argv);
+  x = x+1;
   return 0;
 }

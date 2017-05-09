@@ -8,7 +8,12 @@ char buf[BUFSIZE];
 
 int main(int argc, char** argv)
 {
-  creat("aaa.txt");
+  int x = 0;
+  int y;
+  int z = exec("testExit2.coff",1,argv);
+  x = x+1;
+  join(z,&y);
+  x=x+100;
   halt();
   return 0;
 }
